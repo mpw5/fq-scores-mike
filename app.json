@@ -1,0 +1,51 @@
+{
+  "name": "fq-scores",
+  "description": "",
+  "scripts": {
+  },
+  "env": {
+    "COLLECTION": {
+      "required": true
+    },
+    "DB": {
+      "required": true
+    },
+    "DB_PORT": {
+      "required": true
+    },
+    "GIPHY_API_KEY": {
+      "required": true
+    },
+    "HOST": {
+      "required": true
+    },
+    "PASS": {
+      "required": true
+    },
+    "SLACK_API_TOKEN": {
+      "required": true
+    },
+    "SLACK_CLIENT_ID": {
+      "required": true
+    },
+    "SLACK_CLIENT_SECRET": {
+      "required": true
+    },
+    "USER": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [
+
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
