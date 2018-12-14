@@ -58,7 +58,7 @@ slack.on('/fqscores', payload => {
     console.log("comment " + comment);
 
     // only allow this to be used in #friday-question
-    if (channel === "friday-question") {
+    if (channel === "fridayquestion") {
 
         // if we receive no parameters then display the scores table
         if (userAwardedPoints === '') {
@@ -223,74 +223,74 @@ function getConnected() {
     });
 }
 
-let rtm = new RtmClient(process.env.SLACK_API_TOKEN, {
-    logLevel: 'error',
-    dataStore: new MemoryDataStore(),
-    autoReconnect: true,
-    autoMark: true
-});
-
-rtm.start();
-
-rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, () => {
-    console.log('Connected!');
-});
-
-rtm.on(RTM_EVENTS.MESSAGE, (message) => {
-
-    let channel = message.channel;
-    let text = message.text;
-    let user = message.user;
-    let type = message.type;
-    let subtype = message.subtype;
-    let thread_ts = message.thread_ts;
-    let ts = message.ts;
-
-    if (typeof(user) != "undefined") {  // ignore bot messages
-
-        console.log(">>>> channel: " + channel);
-        console.log(">>>> text: " + text);
-        console.log(">>>> user: " + user);
-        console.log(">>>> type: " + type);
-        console.log(">>>> subtype: " + subtype);
-        console.log(">>>> ts: " + ts);
-        console.log(">>>> thread_ts: " + thread_ts);
-
-        twss.threshold = 0.8;
-        let isTwss = twss.is(text);
-        let prob = twss.prob(text);
-
-        console.log("twss: " + prob);
-
-        if (isTwss) {
-
-            console.log("getting twss gif");
-
-            giphyApi.random({
-                tag: 'thats-what-she-said-the-office-michael-scott',
-                fmt: 'json'
-            }, function (err, res) {
-                  if (err) {
-                      console.log(err);
-                  }
-                  else {
-                      console.log(">>>>> got twss gif");
-                      console.log(res.data.fixed_width_downsampled_url);
-
-                      rtm.send({
-                          text:      ":twss:",
-                          channel:   channel,
-                          thread_ts: ts,
-                          type:      RTM_EVENTS.MESSAGE
-                      });
-
-                  }
-
-             });
-
-         }
-    }
-});
+// let rtm = new RtmClient(process.env.SLACK_API_TOKEN, {
+//     logLevel: 'error',
+//     dataStore: new MemoryDataStore(),
+//     autoReconnect: true,
+//     autoMark: true
+// });
+//
+// rtm.start();
+//
+// rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, () => {
+//     console.log('Connected!');
+// });
+//
+// rtm.on(RTM_EVENTS.MESSAGE, (message) => {
+//
+//     let channel = message.channel;
+//     let text = message.text;
+//     let user = message.user;
+//     let type = message.type;
+//     let subtype = message.subtype;
+//     let thread_ts = message.thread_ts;
+//     let ts = message.ts;
+//
+//     if (typeof(user) != "undefined") {  // ignore bot messages
+//
+//         console.log(">>>> channel: " + channel);
+//         console.log(">>>> text: " + text);
+//         console.log(">>>> user: " + user);
+//         console.log(">>>> type: " + type);
+//         console.log(">>>> subtype: " + subtype);
+//         console.log(">>>> ts: " + ts);
+//         console.log(">>>> thread_ts: " + thread_ts);
+//
+//         twss.threshold = 0.8;
+//         let isTwss = twss.is(text);
+//         let prob = twss.prob(text);
+//
+//         console.log("twss: " + prob);
+//
+//         if (isTwss) {
+//
+//             console.log("getting twss gif");
+//
+//             giphyApi.random({
+//                 tag: 'thats-what-she-said-the-office-michael-scott',
+//                 fmt: 'json'
+//             }, function (err, res) {
+//                   if (err) {
+//                       console.log(err);
+//                   }
+//                   else {
+//                       console.log(">>>>> got twss gif");
+//                       console.log(res.data.fixed_width_downsampled_url);
+//
+//                       rtm.send({
+//                           text:      ":twss:",
+//                           channel:   channel,
+//                           thread_ts: ts,
+//                           type:      RTM_EVENTS.MESSAGE
+//                       });
+//
+//                   }
+//
+//              });
+//
+//          }
+//     }
+// });
 
 // incoming http requests
 slack.listen(process.env.PORT || '3000');
