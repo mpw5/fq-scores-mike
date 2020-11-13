@@ -5,8 +5,9 @@
 "use strict";
 
 var mongodb = require('mongodb');
-// Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname, details set in .env
-var MONGODB_URI = 'mongodb://'+process.env.USER+':'+process.env.PASS+'@'+process.env.HOST+':'+process.env.DB_PORT+'/'+process.env.DB;
+// Standard URI format: mongodb+srv://dbuser:dbpassword@host/dbname?retryWrites=true&w=majority, details set in .env
+// eg mongodb+srv://mpw5:<password>@fq-scores-test.yofhx.mongodb.net/fq-scores-test?retryWrites=true&w=majority
+var MONGODB_URI = 'mongodb://' + process.env.USER + ':' + process.env.PASS + '@' + process.env.HOST + ':' + process.env.DB_PORT + '/' + process.env.DB;
 var collection;
 
 // ------------------------------
@@ -16,13 +17,21 @@ var collection;
 
 // Serializes an object to JSON and stores it to the database
 function setScore(key, value) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     if (typeof(key) !== "string") {
       reject(new DatastoreKeyNeedToBeStringException(key));
     } else {
       try {
         var serializedValue = JSON.stringify(value);
-        collection.updateOne({"name": key}, {$set: {"score": Number(serializedValue)}}, {upsert:true}, function (err, res) {
+        collection.updateOne({
+          "name": key
+        }, {
+          $set: {
+            "score": Number(serializedValue)
+          }
+        }, {
+          upsert: true
+        }, function(err, res) {
           if (err) {
             reject(new DatastoreUnderlyingException(value, err));
           } else {
@@ -38,13 +47,21 @@ function setScore(key, value) {
 
 // Serializes an object to JSON and stores it to the database
 function setEmoji(key, value) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     if (typeof(key) !== "string") {
       reject(new DatastoreKeyNeedToBeStringException(key));
     } else {
       try {
         var serializedValue = JSON.stringify(value);
-        collection.updateOne({"name": key}, {$push: { emojis: [value] } }, {upsert:true}, function (err, res) {
+        collection.updateOne({
+          "name": key
+        }, {
+          $push: {
+            emojis: [value]
+          }
+        }, {
+          upsert: true
+        }, function(err, res) {
           if (err) {
             reject(new DatastoreUnderlyingException(value, err));
           } else {
@@ -58,40 +75,42 @@ function setEmoji(key, value) {
   });
 }
 
-
 // Get all records from db, sorted by score
-function getAll(callback){
-  try{
-      //Find all documents in the collection:
+function getAll(callback) {
+  try {
+    //Find all documents in the collection:
 
-      collection.find({}).sort({score: -1} ).toArray(function(err, result) {
-        if (err) throw err;
+    collection.find({}).sort({
+      score: -1
+    }).toArray(function(err, result) {
+      if (err) throw err;
 
-        callback(result);
-      });
+      callback(result);
+    });
 
-  }catch (ex) {
-      console.log("Error getting results from db");
-    }
+  } catch (ex) {
+    console.log("Error getting results from db");
+  }
 }
 
 
 // Fetches an object from the DynamoDB instance, deserializing it from JSON
 function get(key) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     try {
       if (typeof(key) !== "string") {
         reject(new DatastoreKeyNeedToBeStringException(key));
       } else {
-        collection.findOne({"name":key}, function (err, data) {
+        collection.findOne({
+          "name": key
+        }, function(err, data) {
           if (err) {
             reject(new DatastoreUnderlyingException(key, err));
           } else {
             try {
-              if(data===null){
+              if (data === null) {
                 resolve(null);
-              }
-              else{
+              } else {
                 resolve(JSON.parse(data.score));
               }
             } catch (ex) {
@@ -101,18 +120,22 @@ function get(key) {
         });
       }
     } catch (ex) {
-      reject(new DatastoreUnknownException("get", {"key": key}, ex));
+      reject(new DatastoreUnknownException("get", {
+        "key": key
+      }, ex));
     }
   });
 }
 
 function remove(key) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     try {
       if (typeof(key) !== "string") {
         reject(new DatastoreKeyNeedToBeStringException(key));
       } else {
-        collection.deleteOne({"key": key}, function (err, res) {
+        collection.deleteOne({
+          "key": key
+        }, function(err, res) {
           if (err) {
             reject(new DatastoreUnderlyingException(key, err));
           } else {
@@ -121,29 +144,31 @@ function remove(key) {
         });
       }
     } catch (ex) {
-      reject(new DatastoreUnknownException("remove", {"key": key}, ex));
+      reject(new DatastoreUnknownException("remove", {
+        "key": key
+      }, ex));
     }
   });
 }
 
 function removeMany(keys) {
-  return Promise.all(keys.map(function (key) {
+  return Promise.all(keys.map(function(key) {
     return remove(key);
   }));
 }
 
 function connect() {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     try {
       mongodb.MongoClient.connect(MONGODB_URI, function(err, db) {
-        if(err) reject(err);
+        if (err) reject(err);
 
         const myDb = db.db(process.env.DB);
 
         collection = myDb.collection(process.env.COLLECTION);
         resolve(collection);
       });
-    } catch(ex) {
+    } catch (ex) {
       reject(new DatastoreUnknownException("connect", null, ex));
     }
   });
@@ -192,50 +217,50 @@ var sync = require("synchronize");
 
 function setCallback(key, value, callback) {
   setScore(key, value)
-    .then(function (value) {
+    .then(function(value) {
       callback(null, value);
     })
-    .catch(function (err) {
+    .catch(function(err) {
       callback(err, null);
     });
 }
 
 function getCallback(key, callback) {
   get(key)
-    .then(function (value) {
+    .then(function(value) {
       callback(null, value);
     })
-    .catch(function (err) {
+    .catch(function(err) {
       callback(err, null);
     });
 }
 
 function removeCallback(key, callback) {
   remove(key)
-    .then(function (value) {
+    .then(function(value) {
       callback(null, value);
     })
-    .catch(function (err) {
+    .catch(function(err) {
       callback(err, null);
     });
 }
 
 function removeManyCallback(keys, callback) {
   removeMany(keys)
-    .then(function (value) {
+    .then(function(value) {
       callback(null, value);
     })
-    .catch(function (err) {
+    .catch(function(err) {
       callback(err, null);
     });
 }
 
 function connectCallback(callback) {
   connect()
-    .then(function (value) {
+    .then(function(value) {
       callback(null, value);
     })
-    .catch(function (err) {
+    .catch(function(err) {
       callback(err, null);
     });
 }
@@ -261,7 +286,7 @@ function connectSync() {
 }
 
 function initializeApp(app) {
-  app.use(function (req, res, next) {
+  app.use(function(req, res, next) {
     sync.fiber(next);
   });
 }

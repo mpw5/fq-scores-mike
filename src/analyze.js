@@ -1,67 +1,67 @@
 var docUtils = require("./document");
 
 var shuffleArray = function(array) {
-    var tmp, current, top = array.length;
+  var tmp, current, top = array.length;
 
-    if(top) while(--top) {
-        current = Math.floor(Math.random() * (top + 1));
-        tmp = array[current];
-        array[current] = array[top];
-        array[top] = tmp;
+  if (top)
+    while (--top) {
+      current = Math.floor(Math.random() * (top + 1));
+      tmp = array[current];
+      array[current] = array[top];
+      array[top] = tmp;
     }
 
-    return array;
+  return array;
 };
 
 var getClassificationStats = exports.getClassificationStats =
- function(isClass, trainingData, validationData) {
-  var classifications = {
-    // True positive
-    "tp": 0,
-    // False positive
-    "fp": 0,
-    // False negative
-    "fn": 0,
-    // True negative
-    "tn": 0
-  };
+  function(isClass, trainingData, validationData) {
+    var classifications = {
+      // True positive
+      "tp": 0,
+      // False positive
+      "fp": 0,
+      // False negative
+      "fn": 0,
+      // True negative
+      "tn": 0
+    };
 
-  for (var validationType in validationData) {
-    for (var i = 0; i < validationData[validationType].length; i++) {
-      var iC = isClass({
-        "prompt": validationData[validationType][i],
-        "trainingData": trainingData
-      });
+    for (var validationType in validationData) {
+      for (var i = 0; i < validationData[validationType].length; i++) {
+        var iC = isClass({
+          "prompt": validationData[validationType][i],
+          "trainingData": trainingData
+        });
 
-      if (validationType == 'pos') {
-        if (iC) classifications.tp++;
-        else    classifications.fn++;
-      }
-      else if (validationType == 'neg') {
-        if (iC) classifications.fp++;
-        else    classifications.tn++;
+        if (validationType == 'pos') {
+          if (iC) classifications.tp++;
+          else classifications.fn++;
+        } else if (validationType == 'neg') {
+          if (iC) classifications.fp++;
+          else classifications.tn++;
+        }
       }
     }
-  }
 
-  return classifications;
-};
+    return classifications;
+  };
 
 var getNumCorrectClassifications = exports.getNumCorrectClassifications =
- function(isClass, trainingData, validationData) {
-  var stats = getClassificationStats(isClass, trainingData, validationData);
-  return stats.tp + stats.tn;
-};
+  function(isClass, trainingData, validationData) {
+    var stats = getClassificationStats(isClass, trainingData, validationData);
+    return stats.tp + stats.tn;
+  };
 
 var getNumIncorrectClassifications = getNumIncorrectClassifications =
- function(isClass, trainingData, validationData) {
-  var stats = getClassificationStats(isClass, trainingData, validationData);
-  return stats.fp + stats.fn;
-};
+  function(isClass, trainingData, validationData) {
+    var stats = getClassificationStats(isClass, trainingData, validationData);
+    return stats.fp + stats.fn;
+  };
 
 // TODO: Merge with getClassificationStats, since they kind of do the same thing
 exports.kFoldCrossValidation = function(isClass, sampleData, numFolds) {
-  var numFolds                    = numFolds || 10
+  var numFolds = numFolds || 10
     // We assume there are an equal number of positive and negative sample points
 
     /* There is a slight mathematical issue with this.
@@ -70,24 +70,29 @@ exports.kFoldCrossValidation = function(isClass, sampleData, numFolds) {
      * and negative training points. Due to the law of large numbers, however,
      * this shouldn't be an issue with a large enough sample pool.
      */
-    , sampleDataSize              = sampleData.pos.length
-    , foldSize                    = Math.floor( sampleDataSize / numFolds )
-    , numIncorrectClassifications = 0;
+    ,
+    sampleDataSize = sampleData.pos.length,
+    foldSize = Math.floor(sampleDataSize / numFolds),
+    numIncorrectClassifications = 0;
 
-  sampleData.pos = shuffleArray( sampleData.pos );
-  sampleData.neg = shuffleArray( sampleData.neg );
+  sampleData.pos = shuffleArray(sampleData.pos);
+  sampleData.neg = shuffleArray(sampleData.neg);
 
-  var hasBeenUsedAsTrainingData = { "pos": [], "neg": [] }
-    , hasNotBeenUsedAsTrainingData = sampleData;
+  var hasBeenUsedAsTrainingData = {
+      "pos": [],
+      "neg": []
+    },
+    hasNotBeenUsedAsTrainingData = sampleData;
 
-  for (var i = 0; i <= sampleDataSize; i+=foldSize) {
+  for (var i = 0; i <= sampleDataSize; i += foldSize) {
     var trainingGroup = {
         // Use the first fold from data that hasn't been used as training data
-        "pos": hasNotBeenUsedAsTrainingData.pos.splice( 0, foldSize ),
-        "neg": hasNotBeenUsedAsTrainingData.neg.splice( 0, foldSize )
+        "pos": hasNotBeenUsedAsTrainingData.pos.splice(0, foldSize),
+        "neg": hasNotBeenUsedAsTrainingData.neg.splice(0, foldSize)
       }
       // Use everything except the current training data as validation data
-      , validationGroup = {
+      ,
+      validationGroup = {
         "pos": hasBeenUsedAsTrainingData.pos.concat(hasNotBeenUsedAsTrainingData.pos),
         "neg": hasBeenUsedAsTrainingData.neg.concat(hasNotBeenUsedAsTrainingData.neg)
       };
@@ -107,8 +112,8 @@ exports.kFoldCrossValidation = function(isClass, sampleData, numFolds) {
 exports.getPrecisionRecall = function(isClass, trainingData, validationData) {
   var stats = getClassificationStats(isClass, trainingData, validationData);
   return {
-    "precision": stats.tp / ( stats.tp + stats.fp ),
-    "recall": stats.tp / ( stats.tp + stats.fn )
+    "precision": stats.tp / (stats.tp + stats.fp),
+    "recall": stats.tp / (stats.tp + stats.fn)
   };
 };
 
@@ -136,15 +141,15 @@ exports.getPrecisionRecall = function(isClass, trainingData, validationData) {
  * tfidf =
  *  [ { 'hello':1/2*log(2/2), 'day':1/2*log(2/1) },
  *    { 'hello':1/2*log(2/2), 'night':1/2*log(2/1) } ]
-**/
-exports.getTfidf = function( documents, numWordsInNgram ) {
+ **/
+exports.getTfidf = function(documents, numWordsInNgram) {
   if (!numWordsInNgram) numWordsInNgram = 1;
 
-  var docStats = []
-    , numDocumentsWithNgram = {};
+  var docStats = [],
+    numDocumentsWithNgram = {};
 
   for (var d in documents) {
-    var ngramStats = docUtils.getNgramFrequencies( [documents[d]], numWordsInNgram, true );
+    var ngramStats = docUtils.getNgramFrequencies([documents[d]], numWordsInNgram, true);
     docStats.push(ngramStats);
 
     var ngramFrequencies = ngramStats.ngramFrequencies;
@@ -167,7 +172,7 @@ exports.getTfidf = function( documents, numWordsInNgram ) {
   // Calculate idf
   var idf = {};
   for (var ngram in numDocumentsWithNgram) {
-    idf[ngram] = Math.log( documents.length / numDocumentsWithNgram[ngram] );
+    idf[ngram] = Math.log(documents.length / numDocumentsWithNgram[ngram]);
   }
 
   // Calculate tfidf
