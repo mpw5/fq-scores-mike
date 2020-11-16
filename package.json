@@ -2,28 +2,27 @@
   "name": "fqscores",
   "version": "1.0.0",
   "engines": {
-  "node": "6.14.4"
-},
+    "node": "10.16.2"
+  },
   "description": "Process Friday Question Scores",
   "scripts": {
     "start": "node index.js"
   },
-  "author": "Mark Whitaker <mark.whitaker@justice.gov.uk>",
+  "author": "Mark Whitaker <mark.whitaker@digital.justice.gov.uk>",
   "dependencies": {
-    "@slack/client": "^3.14.2",
-    "axios": "^0.13.1",
-    "chai": "^4.1.2",
-    "delay": "^2.0.0",
-    "dotenv": "^4.0.0",
-    "giphy-api": "^1.2.7",
-    "httpdispatcher": "^2.1.1",
+    "@slack/client": "^5.0.2",
+    "axios": "^0.20.0",
+    "chai": "^4.2.0",
+    "delay": "^4.4.0",
+    "detect-libc": "^1.0.3",
+    "dotenv": "^8.2.0",
+    "httpdispatcher": "^2.1.2",
     "mongodb": "*",
-    "newrelic": "^2.6.1",
-    "optimist": "^0.6.1",
-    "request": "2.72.0",
-    "synchronize": "^0.9.14",
+    "newrelic": "^6.12.1",
+    "request": "2.88.2",
+    "synchronize": "^2.0.0",
     "twss": "^0.1.6",
-    "ws": "^1.1.1"
+    "ws": "^7.3.1"
   },
   "license": "MIT"
 }

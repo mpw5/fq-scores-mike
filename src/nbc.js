@@ -1,19 +1,19 @@
-var docUtils = require("./document.js")
-  , crypto   = require("crypto")
+var docUtils = require("./document.js"),
+  crypto = require("crypto")
   // Stores ngram probabilities based on the sha1 value of stringified trainingData object.
   // This is probably an awful way to cache calculations.
   , probabilities = {};
 
 var getTwssProbability = exports.getTwssProbability = function(options) {
-  var prompt            = docUtils.cleanDocument(options.prompt)
-    , numWordsInNgram  = options.numWordsInNgram || 1
-    , trainingData     = options.trainingData    || {}
-    , ngrams           = docUtils.getNgrams(prompt, numWordsInNgram)
-    , trainingDataHash = crypto.createHash('sha1').update(JSON.stringify(trainingData)+numWordsInNgram).digest('hex');
+  var prompt = docUtils.cleanDocument(options.prompt),
+    numWordsInNgram = options.numWordsInNgram || 1,
+    trainingData = options.trainingData || {},
+    ngrams = docUtils.getNgrams(prompt, numWordsInNgram),
+    trainingDataHash = crypto.createHash('sha1').update(JSON.stringify(trainingData) + numWordsInNgram).digest('hex');
 
   if (!probabilities[trainingDataHash])
     probabilities[trainingDataHash] =
-      docUtils.getNgramBayesianProbabilities(trainingData, numWordsInNgram);
+    docUtils.getNgramBayesianProbabilities(trainingData, numWordsInNgram);
 
   var probs = probabilities[trainingDataHash];
 
@@ -31,10 +31,10 @@ var getTwssProbability = exports.getTwssProbability = function(options) {
 };
 
 exports.isTwss = function(options) {
-  var threshold = options.threshold || 0.5
-    , twssProbability = options.hasOwnProperty('twssProbability') ?
-                            options.twssProbability :
-                            getTwssProbability(options);
+  var threshold = options.threshold || 0.5,
+    twssProbability = options.hasOwnProperty('twssProbability') ?
+    options.twssProbability :
+    getTwssProbability(options);
 
   return twssProbability > threshold;
 };

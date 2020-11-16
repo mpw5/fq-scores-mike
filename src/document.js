@@ -16,18 +16,18 @@ var cleanDocument = exports.cleanDocument = function(document) {
 };
 
 var getNgrams = exports.getNgrams = function(document, numWordsInNgram) {
-  var words = document.split(" ")
-    , ngrams = [];
+  var words = document.split(" "),
+    ngrams = [];
 
   // We only want to create whole ngrams
-  for (var w = 0; w+numWordsInNgram <= words.length; w++) {
+  for (var w = 0; w + numWordsInNgram <= words.length; w++) {
     // Create ngram
     var ngram = "";
     for (var n = 0; n < numWordsInNgram; n++) {
-      ngram += words[w+n];
+      ngram += words[w + n];
 
       // Add a space between words, unless we're at the last index
-      if (n+1 < numWordsInNgram) ngram += ' ';
+      if (n + 1 < numWordsInNgram) ngram += ' ';
     }
 
     ngrams.push(ngram);
@@ -39,49 +39,49 @@ var getNgrams = exports.getNgrams = function(document, numWordsInNgram) {
 };
 
 var getNgramFrequencies = exports.getNgramFrequencies =
- function(documents, numWordsInNgram, countNgramOncePerDoc) {
-  var ngramFrequencies = {}
-    , totalNgrams      = 0;
+  function(documents, numWordsInNgram, countNgramOncePerDoc) {
+    var ngramFrequencies = {},
+      totalNgrams = 0;
 
-  if (countNgramOncePerDoc === undefined)
-    countNgramOncePerDoc = false;
+    if (countNgramOncePerDoc === undefined)
+      countNgramOncePerDoc = false;
 
-  for (var d = 0; d < documents.length; d++) {
-    documents[d] = cleanDocument(documents[d]);
+    for (var d = 0; d < documents.length; d++) {
+      documents[d] = cleanDocument(documents[d]);
 
-    var ngrams = getNgrams(documents[d], numWordsInNgram);
+      var ngrams = getNgrams(documents[d], numWordsInNgram);
 
-    // numWordsInNgram may been larger than the number of words
-    if (!ngrams) continue;
+      // numWordsInNgram may been larger than the number of words
+      if (!ngrams) continue;
 
-    if (countNgramOncePerDoc) var countedNgrams = [];
-    for (var n = 0; n < ngrams.length; n++) {
-      totalNgrams++;
+      if (countNgramOncePerDoc) var countedNgrams = [];
+      for (var n = 0; n < ngrams.length; n++) {
+        totalNgrams++;
 
-      // If we have been instructed to only count ngrams once per document
-      if (countNgramOncePerDoc) {
-        // Just continue to the next ngram without counting it (again)
-        if (countedNgrams[ngrams[n]]) continue;
-        else countedNgrams[ngrams[n]] = true;
+        // If we have been instructed to only count ngrams once per document
+        if (countNgramOncePerDoc) {
+          // Just continue to the next ngram without counting it (again)
+          if (countedNgrams[ngrams[n]]) continue;
+          else countedNgrams[ngrams[n]] = true;
+        }
+
+        if (ngramFrequencies[ngrams[n]]) ngramFrequencies[ngrams[n]]++;
+        else ngramFrequencies[ngrams[n]] = 1;
       }
-
-      if (ngramFrequencies[ngrams[n]]) ngramFrequencies[ngrams[n]]++;
-      else ngramFrequencies[ngrams[n]] = 1;
     }
-  }
 
-  return {
-    "ngramFrequencies": ngramFrequencies,
-    "totalNgrams": totalNgrams
+    return {
+      "ngramFrequencies": ngramFrequencies,
+      "totalNgrams": totalNgrams
+    };
   };
-};
 
 exports.getNgramBayesianProbabilities = function(documents, numWordsInNgram) {
-  var probabilities         = {}
-    , posNgramFrequencyData = getNgramFrequencies(documents.pos, numWordsInNgram)
-    , negNgramFrequencyData = getNgramFrequencies(documents.neg, numWordsInNgram)
-    , posNgramFrequencies   = posNgramFrequencyData.ngramFrequencies
-    , negNgramFrequencies   = negNgramFrequencyData.ngramFrequencies;
+  var probabilities = {},
+    posNgramFrequencyData = getNgramFrequencies(documents.pos, numWordsInNgram),
+    negNgramFrequencyData = getNgramFrequencies(documents.neg, numWordsInNgram),
+    posNgramFrequencies = posNgramFrequencyData.ngramFrequencies,
+    negNgramFrequencies = negNgramFrequencyData.ngramFrequencies;
 
   for (var ngram in posNgramFrequencies) {
     // Don't calculate the probability if we don't have frequency data for negative ngrams
@@ -91,18 +91,18 @@ exports.getNgramBayesianProbabilities = function(documents, numWordsInNgram) {
     // This assumes the number of positive documents are the same as the number of negative documents
     // Pr(S|W) = Pr(W|S) / ( Pr(W|S) + Pr(W|H) )
     probabilities[ngram] = posNgramFrequencies[ngram] /
-                           ( posNgramFrequencies[ngram] +
-                             negNgramFrequencies[ngram] );
+      (posNgramFrequencies[ngram] +
+        negNgramFrequencies[ngram]);
   }
 
   return probabilities;
 };
 
 exports.getNgramProbabilities = function(documents, numWordsInNgram) {
-  var probabilities      = {}
-    , ngramFrequencyData = getNgramFrequencies(documents, numWordsInNgram)
-    , ngramFrequencies   = ngramFrequencyData.ngramFrequencies
-    , totalNgrams        = ngramFrequencyData.totalNgrams;
+  var probabilities = {},
+    ngramFrequencyData = getNgramFrequencies(documents, numWordsInNgram),
+    ngramFrequencies = ngramFrequencyData.ngramFrequencies,
+    totalNgrams = ngramFrequencyData.totalNgrams;
 
   for (var ngram in ngramFrequencies) {
     probabilities[ngram] = ngramFrequencies[ngram] / totalNgrams;
