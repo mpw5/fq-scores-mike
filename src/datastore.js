@@ -7,7 +7,7 @@
 var mongodb = require('mongodb');
 // Standard URI format: mongodb+srv://dbuser:dbpassword@host/dbname?retryWrites=true&w=majority, details set in .env
 // eg mongodb+srv://mpw5:<password>@fq-scores-test.yofhx.mongodb.net/fq-scores-test?retryWrites=true&w=majority
-var MONGODB_URI = 'mongodb://' + process.env.USER + ':' + process.env.PASS + '@' + process.env.HOST + ':' + process.env.DB_PORT + '/' + process.env.DB;
+var MONGODB_URI = 'mongodb+srv://' + process.env.USERNAME + ':' + process.env.PASS + '@' + process.env.HOST + '/' + process.env.DB + '?' + process.env.DB_PARAMS;
 var collection;
 
 // ------------------------------
